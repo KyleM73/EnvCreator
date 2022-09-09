@@ -4,6 +4,8 @@ from setuptools import setup
 
 setup(name='EnvCreator',
       version='0.1.0',
+      author='Kyle Morgenstein',
+      author_email='kylem@utexas.edu',
       install_requires=[
             'numpy',
             'matplotlib',

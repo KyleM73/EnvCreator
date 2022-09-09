@@ -26,14 +26,14 @@ class envCreator:
 
         return self.occ
 
-    def get_urdf(self):
+    def get_urdf(self,output_dir="urdf/"):
         ## Create Occupancy Map from Image
         if self.occ is None:
             self.image2occupancy()
 
         ## Initialize URDF
 
-        self.fname = "urdf/"+self.pngfile.split("/")[1].split(".")[0]+".urdf"
+        self.fname = output_dir+self.pngfile.split("/")[1].split(".")[0]+".urdf"
         
         with open(self.fname,"w") as f:
             f.write('<?xml version="1.0"?>\n')
@@ -208,14 +208,14 @@ class envCreator:
             filtered_path.append(self.path[-1])
         return filtered_path
 
-    def path2urdf(self,path=[(0,0)]):
+    def path2urdf(self,path=[(0,0)],output_dir="urdf/"):
         #path is list of tuples of waypts
 
         if path == [(0,0)] and self.path_xy is not None:
             path = self.path_xy
 
         #make base link
-        self.path_fname = "urdf/path.urdf"
+        self.path_fname = output_dir+"path.urdf"
 
         with open(self.path_fname,"w") as f:
             f.write('<?xml version="1.0"?>\n')

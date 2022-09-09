@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 
-from env_creator import envCreator
-from utils import HidePrints
+from EnvCreator.env_creator import envCreator
+from EnvCreator.utils import HidePrints
 
 class humanEnvCreator(envCreator):
     def __init__(self,file,resolution=0.1,height=2,density=1):
