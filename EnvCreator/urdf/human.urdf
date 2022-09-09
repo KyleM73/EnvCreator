@@ -1,0 +1,999 @@
+<?xml version="1.0"?>
+
+<!-- This implements the reference model from
+https://mmm.humanoids.kit.edu/referencemodel.html
+with a height of H = 1.75. This model is based on the one from
+"Biomechanics and motor control of human movement", David A. Winter
+
+The segment mass data (only mass) is calculated using the table 4.1 from this book for
+a total body mass of 68 kg.
+
+This model's additional details (feet), which are implemented here, are given in
+Terlemez, Ö., Ulbrich, S., Mandery, C., Do, M., Vahrenkamp, N., & Asfour, T. (2014, November). Master Motor Map (MMM)—Framework and toolkit for capturing, representing, and reproducing human motion on humanoid robots. In 2014 IEEE-RAS International Conference on Humanoid Robots (pp. 894-901). IEEE.
+
+IMPORTANT NOTE: THE INERTIAL PROPERTIES ARE NOT CORRECT (PARTICULARLY THE ORIGINS)
+-->
+
+<!-- 
+Link to range of motion reference:
+https://www.wikem.org/wiki/Range_of_motion_by_joint
+via
+https://www.physio-pedia.com/Range_of_Motion
+-->
+
+<robot name="human adult">
+
+  <link name="chest">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0.18375 0" />
+      <mass value = "14.688" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+
+    <collision>
+      <geometry>
+        <box size="0.2 0.4 0.1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0.1 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/chest.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+<!-- 
+  Downwards from Chest 
+  ************************
+-->
+
+  <link name="belly">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.0525 0" />
+      <mass value = "9.452" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="obj/belly.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <link name="bellyY">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="bellyZ">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="chest_to_bellyY" type="revolute">
+    <parent link="chest"/>
+    <child link="bellyY"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="100.0" lower="-0.52" upper="0.52" velocity="1"/>
+    <origin xyz="0 0 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="chest_to_bellyZ" type="revolute">
+    <parent link="bellyY"/>
+    <child link="bellyZ"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="100.0" lower="-0.44" upper="0.44" velocity="1"/>
+    <origin xyz="0 0 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="chest_to_belly" type="fixed">
+    <parent link="bellyZ"/>
+    <child link="belly"/>
+  </joint>
+
+  <link name="pelvis">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.035 0" />
+      <mass value = "9.656" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="obj/pelvis.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+    
+  </link>
+
+  <joint name="belly_to_pelvis" type="revolute">
+    <parent link="belly"/>
+    <child link="pelvis"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100.0" lower="-0.78" upper="0.44" velocity="1"/>
+    <origin xyz="0 -0.105 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <!--
+    Right Leg
+    ****
+  -->
+
+  <link name="right_leg">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.214375 0" />
+      <mass value = "6.8" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.4" radius="0.07"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.2 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/leg_right.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <link name="rlegX">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="rlegY">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="rlegZ">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="pelvis_to_rlegX" type="revolute">
+    <parent link="pelvis"/>
+    <child link="rlegX"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100.0" lower="-1.74" upper="0.52" velocity="1"/>
+    <origin xyz="-0.091 -0.07 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="pelvis_to_rlegY" type="revolute">
+    <parent link="rlegX"/>
+    <child link="rlegY"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="100.0" lower="-0.78" upper="0.78" velocity="1"/>
+    <origin xyz="0 0 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="pelvis_to_rlegZ" type="revolute">
+    <parent link="rlegY"/>
+    <child link="rlegZ"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="100.0" lower="-0.7" upper="0.35" velocity="1"/>
+    <origin xyz="0 0 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="pelvis_to_right_leg" type="fixed">
+    <parent link="rlegZ"/>
+    <child link="right_leg"/>
+  </joint>
+
+  <link name="right_shin">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.21525 0" />
+      <mass value = "3.162" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.4" radius="0.05"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.2 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/shin_right.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="right_leg_to_right_shin" type="revolute">
+    <parent link="right_leg"/>
+    <child link="right_shin"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100.0" lower="0" upper="2.62" velocity="1"/>
+    <origin xyz="0 -0.42875 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <link name="right_foot">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.034125 0" />
+      <mass value = "0.493" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <box size="0.1 0.06 0.25"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 -0.045 0.075"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/foot_right.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+  
+  <joint name="right_shin_to_right_foot" type="revolute">
+    <parent link="right_shin"/>
+    <child link="right_foot"/>
+    <origin xyz="0 -0.4305 0"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100.0" lower="-0.52" upper="0.70" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <link name="right_sole">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0.042" />
+      <mass value = "0.32867" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "5.0001" iyz = "0" izz = "1.0001" />
+    </inertial>
+    
+    <visual>
+      <geometry>
+        <mesh filename="obj/sole_right.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="right_foot_to_right_sole" type="fixed">
+    <parent link="right_foot"/>
+    <child link="right_sole"/>
+    <origin xyz="0 -0.06825 0.035"/>
+  </joint>
+
+  <link name="right_toes">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0.02975" />
+      <mass value = "0.1643" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "5.0001" iyz = "0" izz = "1.0001" />
+    </inertial>
+    
+    <visual>
+      <geometry>
+        <mesh filename="obj/toes_right.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="right_sole_to_right_toes" type="fixed">
+    <parent link="right_sole"/>
+    <child link="right_toes"/>
+    <origin xyz="0 0 0.084"/>
+  </joint>
+
+  <!--
+    Left Leg
+    ****
+  -->
+
+<link name="left_leg">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.214375 0" />
+      <mass value = "6.8" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.4" radius="0.07"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.2 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/leg_left.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <link name="llegX">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="llegY">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="llegZ">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="pelvis_to_llegX" type="revolute">
+    <parent link="pelvis"/>
+    <child link="llegX"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100.0" lower="-1.74" upper="0.52" velocity="1"/>
+    <origin xyz="0.091 -0.07 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="pelvis_to_llegY" type="revolute">
+    <parent link="llegX"/>
+    <child link="llegY"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="100.0" lower="-0.78" upper="0.78" velocity="1"/>
+    <origin xyz="0 0 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="pelvis_to_llegZ" type="revolute">
+    <parent link="llegY"/>
+    <child link="llegZ"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="100.0" lower="-0.35" upper="0.7" velocity="1"/>
+    <origin xyz="0 0 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="pelvis_to_left_leg" type="fixed">
+    <parent link="llegZ"/>
+    <child link="left_leg"/>
+  </joint>
+
+  <link name="left_shin">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.21525 0" />
+      <mass value = "3.162" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.4" radius="0.05"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.2 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/shin_left.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="left_leg_to_left_shin" type="revolute">
+    <parent link="left_leg"/>
+    <child link="left_shin"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100.0" lower="0" upper="2.62" velocity="1"/>
+    <origin xyz="0 -0.42875 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <link name="left_foot">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.034125 0" />
+      <mass value = "0.493" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+
+    <collision>
+      <geometry>
+        <box size="0.1 0.06 0.25"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 -0.045 0.075"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/foot_left.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+    
+    
+  </link>
+  
+  <joint name="left_shin_to_left_foot" type="revolute">
+    <parent link="left_shin"/>
+    <child link="left_foot"/>
+    <origin xyz="0 -0.4305 0"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100.0" lower="-0.52" upper="0.70" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <link name="left_sole">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0.042" />
+      <mass value = "0.32867" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "5.0001" iyz = "0" izz = "1.0001" />
+    </inertial>
+    
+    <visual>
+      <geometry>
+        <mesh filename="obj/sole_left.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="left_foot_to_left_sole" type="fixed">
+    <parent link="left_foot"/>
+    <child link="left_sole"/>
+    <origin xyz="0 -0.06825 0.035"/>
+  </joint>
+
+  <link name="left_toes">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0.02975" />
+      <mass value = "0.1643" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "5.0001" iyz = "0" izz = "1.0001" />
+    </inertial>
+    
+    <visual>
+      <geometry>
+        <mesh filename="obj/toes_left.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="left_sole_to_left_toes" type="fixed">
+    <parent link="left_sole"/>
+    <child link="left_toes"/>
+    <origin xyz="0 0 0.084"/>
+  </joint>
+
+  <!-- 
+  Upwards from Chest 
+  **********************
+  -->
+
+  <link name="neck">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0.02625 0" />
+      <mass value = "1.50218" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+
+    <collision>
+      <geometry>
+        <cylinder length="0.06" radius="0.08"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 0 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/neck.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="chest_to_neck" type="fixed">
+    <parent link="chest"/>
+    <child link="neck"/>
+    <origin xyz="0 0.3675 0"/>
+  </joint>
+
+  <link name="head">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0.11375 0" />
+      <mass value = "4.005818" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.1" radius="0.08"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 0.1 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/head.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="neck_to_head" type="fixed">
+    <parent link="neck"/>
+    <child link="head"/>
+    <origin xyz="0 0.0525 0"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <!-- 
+  Right Arm 
+  **********************
+  -->
+
+  <link name="right_arm">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.1645 0" />
+      <mass value = "1.904" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.3" radius="0.05"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.125 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/arm_right.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <link name="rarmX">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="rarmY">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="rarmZ">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="chest_to_rarmX" type="revolute">
+    <parent link="chest"/>
+    <child link="rarmX"/>
+    <origin xyz="-0.1925 0.329 0"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100.0" lower="-3.14" upper="0.87" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="chest_to_rarmY" type="revolute">
+    <parent link="rarmX"/>
+    <child link="rarmY"/>
+    <origin xyz="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="100.0" lower="-1.57" upper="1.57" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="chest_to_rarmZ" type="revolute">
+    <parent link="rarmY"/>
+    <child link="rarmZ"/>
+    <origin xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="100.0" lower="-3.14" upper="0.87" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="chest_to_right_arm" type="fixed">
+    <parent link="rarmZ"/>
+    <child link="right_arm"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+  <link name="right_forearm">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.126875 0" />
+      <mass value = "1.088" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.22" radius="0.04"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.1 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/arm_lower_right.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <link name="rfarmX">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="rfarmY">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="rfarmZ">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="right_arm_to_rfarmX" type="revolute">
+    <parent link="right_arm"/>
+    <child link="rfarmX"/>
+    <axis xyz="1 0 0"/>
+    <origin xyz="0 -0.329 0"/>
+    <limit effort="100.0" lower="-2.44" upper="0" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="right_arm_to_rfarmY" type="revolute">
+    <parent link="rfarmX"/>
+    <child link="rfarmY"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0 0"/>
+    <limit effort="100.0" lower="-1.40" upper="1.40" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+  <joint name="right_arm_to_rfarmZ" type="fixed">
+    <parent link="rfarmY"/>
+    <child link="rfarmZ"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+  <joint name="right_arm_to_right_forearm" type="fixed">
+    <parent link="rfarmZ"/>
+    <child link="right_forearm"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+  <link name="right_hand">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.0945 0" />
+      <mass value = "0.408" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.1" radius="0.05"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.05 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/hand_right.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <link name="rhandX">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="rhandY">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="right_forearm_to_rhandX" type="revolute">
+    <parent link="right_forearm"/>
+    <child link="rhandX"/>
+    <axis xyz="1 0 0"/>
+    <origin xyz="0 -0.25375 0"/>
+    <limit effort="100.0" lower="-1.05" upper="1.05" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="right_forearm_to_rhandY" type="revolute">
+    <parent link="rhandX"/>
+    <child link="rhandY"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0 0"/>
+    <limit effort="100.0" lower="-0.35" upper="0.35" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="right_forearm_to_right_hand" type="fixed">
+    <parent link="rhandY"/>
+    <child link="right_hand"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+  <!-- 
+  Left Arm 
+  **********************
+  -->
+
+  <link name="left_arm">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.1645 0" />
+      <mass value = "1.904" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.3" radius="0.05"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.125 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/arm_left.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <link name="larmX">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="larmY">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="larmZ">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="chest_to_larmX" type="revolute">
+    <parent link="chest"/>
+    <child link="larmX"/>
+    <origin xyz="0.1925 0.329 0"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100.0" lower="-3.14" upper="0.87" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="chest_to_larmY" type="revolute">
+    <parent link="larmX"/>
+    <child link="larmY"/>
+    <origin xyz="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="100.0" lower="-1.57" upper="1.57" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="chest_to_larmZ" type="revolute">
+    <parent link="larmY"/>
+    <child link="larmZ"/>
+    <origin xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="100.0" lower="-0.87" upper="3.14" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="chest_to_left_arm" type="fixed">
+    <parent link="larmZ"/>
+    <child link="left_arm"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+  <link name="left_forearm">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.126875 0" />
+      <mass value = "1.088" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.22" radius="0.04"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.1 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/arm_lower_left.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <link name="lfarmX">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="lfarmY">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="lfarmZ">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="left_arm_to_lfarmX" type="revolute">
+    <parent link="left_arm"/>
+    <child link="lfarmX"/>
+    <axis xyz="1 0 0"/>
+    <origin xyz="0 -0.329 0"/>
+    <limit effort="100.0" lower="-2.44" upper="0" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="left_arm_to_lfarmY" type="revolute">
+    <parent link="lfarmX"/>
+    <child link="lfarmY"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0 0"/>
+    <limit effort="100.0" lower="-1.40" upper="1.40" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="left_arm_to_lfarmZ" type="fixed">
+    <parent link="lfarmY"/>
+    <child link="lfarmZ"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0 0"/>
+    <limit effort="100.0" lower="-1.40" upper="1.40" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="left_arm_to_left_forearm" type="fixed">
+    <parent link="lfarmZ"/>
+    <child link="left_forearm"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+  <link name="left_hand">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 -0.0945 0" />
+      <mass value = "0.408" />
+      <inertia ixx = "5.0001" ixy = "0" ixz = "0" iyy = "1.0001" iyz = "0" izz = "5.0001" />
+    </inertial>
+    
+    <collision>
+      <geometry>
+        <cylinder length="0.1" radius="0.05"/>
+      </geometry>
+      <origin rpy="1.57 0 0" xyz="0 -0.05 0"/>
+      <sdf resolution="256"/>
+    </collision>
+    <visual>
+      <geometry>
+        <mesh filename="obj/hand_left.obj" scale="1 1 1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+  </link>
+
+  <link name="lhandX">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <link name="lhandY">
+    <inertial>
+      <origin rpy = "0 0 0" xyz = "0 0 0" />
+      <mass value = "0.001" />
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="left_forearm_to_lhandX" type="revolute">
+    <parent link="left_forearm"/>
+    <child link="lhandX"/>
+    <axis xyz="1 0 0"/>
+    <origin xyz="0 -0.25375 0"/>
+    <limit effort="100.0" lower="-1.05" upper="1.05" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="left_forearm_to_lhandY" type="revolute">
+    <parent link="lhandX"/>
+    <child link="lhandY"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0 0"/>
+    <limit effort="100.0" lower="-0.35" upper="0.35" velocity="1"/>
+    <dynamics damping="5.0" friction="10.0"/>
+  </joint>
+
+  <joint name="left_forearm_to_left_hand" type="fixed">
+    <parent link="lhandY"/>
+    <child link="left_hand"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+</robot>

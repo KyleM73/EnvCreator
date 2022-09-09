@@ -141,6 +141,12 @@ class envCreator:
         lines.append('\n')
         return lines
 
+    def xy2rc(self,pose,zero_loc):
+        return (-int(pose[1]/self.resolution) + zero_loc[0],int(pose[0]/self.resolution) + zero_loc[1])
+
+    def rc2xy(self,pose,zero_loc):
+        return (self.resolution*(pose[1] - zero_loc[1]),self.resolution*(-pose[0] + zero_loc[0]))
+
     def get_path(self,start,target,filter_dist=None,zero_loc=None):
         # if no zero location provided, assumes (0,0) in world coordinates 
         # is 1 meter above the x axis aligned to the env:
@@ -156,8 +162,8 @@ class envCreator:
         # convert from xy to rc coords
         if zero_loc is None:
             zero_loc = (self.occ.shape[0]-int(1/self.resolution),self.occ.shape[1]//2+1) #in (r,c) coords
-        start_rc = (-int(start[1]/self.resolution) + zero_loc[0],int(start[0]/self.resolution) + zero_loc[1])
-        target_rc = (-int(target[1]/self.resolution) + zero_loc[0],int(target[0]/self.resolution) + zero_loc[1])
+        start_rc = self.xy2rc(start,zero_loc)
+        target_rc = self.xy2rc(target,zero_loc)
 
         # check out of bounds coords
         if start_rc[0] < 0 or start_rc[0] > self.occ.shape[0] - 1:
@@ -182,10 +188,10 @@ class envCreator:
         start_node.set_position(start_rc)
         target_node = Node()
         target_node.set_position(target_rc)
-        self.path = A_Star_func(grid,start_node,target_node)
+        self.path = A_Star(grid,start_node,target_node)
         if filter_dist is not None:
             self.path = self.filter_path(filter_dist)
-        self.path_xy = [(self.resolution*(p[1] - zero_loc[1]),self.resolution*(-p[0] + zero_loc[0])) for p in self.path]
+        self.path_xy = [self.rc2xy(p,zero_loc) for p in self.path]
         self.path_xy = [tuple([int(10*p[i])/10 for i in range(len(p))]) for p in self.path_xy] #truncates decimal to 1 digit
         return self.path_xy
 
@@ -196,6 +202,8 @@ class envCreator:
             if ((loc[0]-p[0])**2+(loc[1]-p[1])**2)**.5 > dist/self.resolution:
                 filtered_path.append(p)
                 loc = p
+        if not filtered_path:
+            return self.path
         if filtered_path[-1] != self.path[-1]:
             filtered_path.append(self.path[-1])
         return filtered_path
@@ -361,7 +369,7 @@ class Grid:
     def __repr__(self):
         return "{}".format(self.grid)
 
-def A_Star_func(grid,start,target):
+def A_Star(grid,start,target):
 
     if not grid.is_open(start.get_position()) or not grid.get_adjacent(start):
         print("Invalid Start Position:")
