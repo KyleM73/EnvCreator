@@ -36,7 +36,8 @@ path_asset = p.loadURDF(path_urdf,useFixedBase=True)
 humans_assets = []
 for h in human_locations:
     asset = p.loadURDF("urdf/human.urdf",[h[0],h[1],1.2],p.getQuaternionFromEuler([np.pi/2,0,h[2]]),useFixedBase=True)
-
+    humans_assets.append(asset)
+    
 for t in range(10000):
     p.stepSimulation()
     time.sleep(1./100.)
