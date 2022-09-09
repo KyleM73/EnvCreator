@@ -217,7 +217,9 @@ class envCreator:
         if path == [(0,0)] and self.path_xy is not None:
             path = self.path_xy
 
-        #make base link
+        if output_dir[-1] != '/':
+            output_dir += '/'
+
         self.path_fname = output_dir+"path.urdf"
 
         with open(self.path_fname,"w") as f:
