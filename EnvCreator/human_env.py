@@ -1,10 +1,11 @@
+import random
+
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
-import random
 
 from EnvCreator.env_creator import envCreator
-from EnvCreator.utils import HidePrints
+from EnvCreator.utils import HidePrints, truncate
 
 class humanEnvCreator(envCreator):
     def __init__(self,file,resolution=0.1,height=2,density=1):
@@ -56,24 +57,28 @@ class humanEnvCreator(envCreator):
             pt = path[idx]
             for i in range(iter_lim):
                 dx,dy,dth = rng.uniform([-xlim,-ylim,-np.pi],[xlim,ylim,np.pi])
-                pose = (pt[0]+dx,pt[1]+dy)
-                if self.is_valid_loc(pose,start):
+                pose = (truncate(pt[0]+dx,3),truncate(pt[1]+dy,3))
+                if self.is_valid_loc(pose,path,idx):
                     self.mark_occ(pose)
-                    human_loc.append([*pose,dth])
+                    human_loc.append([*pose,truncate(dth,3)])
                     break
             del path[idx]
+        if len(human_loc) < humans:
+            print(humans," humans requested but only ",len(human_loc)," valid locations found.")
         return human_loc
 
-    def is_valid_loc(self,loc,start):
+    def is_valid_loc(self,loc,path,idx):
         loc_rc = self.xy2rc(loc,self.zero_loc)
+        if path[idx] == self.rc2xy(loc_rc,self.zero_loc):
+            return True
         for i in self.check_pixels:
             r = loc_rc[0] + i[0]
             c = loc_rc[1] + i[1]
             if self.human_occ[r,c]:
                 return False
         with HidePrints():
-            path = self.get_path(start,loc)
-        if len(path) <= 1:
+            local_path = self.get_path(path[idx],loc)
+        if len(local_path) < 2:
             return False
         return True
 
@@ -84,10 +89,32 @@ class humanEnvCreator(envCreator):
             c = loc[1] + i[1]
             self.human_occ[r,c] = 2
 
+    def generate_loc_data(self,start,target,humans,zero_loc=None,xlim=1,ylim=1,start_free_zone=1,end_free_zone=0,iter_lim=100,n=10,output_dir="data/",random_num=False):
+        self.loc_fname = output_dir+"human_loc_data_{env_name}.txt".format(env_name=self.pngfile.split("/")[1].split(".")[0])
+        loc_data = []
+        if random_num: #will interpret as "random num up to at most [humans]"
+            rng = np.random.default_rng()
+            h = rng.integers(low=1, high=humans+1, size=n)
+        else:
+            h = [humans for _ in range(n)]
+        with open(self.loc_fname,"w") as f:
+            for i in range(n):
+                if i:
+                    self.human_occ = self.occ.copy()
+                loc = self.get_human_locations(start,target,h[i],zero_loc,xlim,ylim,start_free_zone,end_free_zone,iter_lim)
+                loc_data.append(loc)
+                f.writelines(str(loc)+"\n")
+        return loc_data
+
+
 if __name__ == "__main__":
-    file = "occ/easy_maze.png"
+    file = "occ/hall.png"
     env_c = humanEnvCreator(file)
-    loc = env_c.get_human_locations((0,0),(0,18),2)
+    start = (0,0)
+    target = (0,18)
+    num_humans = 10
+    loc = env_c.get_human_locations(start,target,num_humans)
+    #loc_data = env_c.generate_loc_data(start,target,num_humans,random_num=True)
     print(loc)
 
 

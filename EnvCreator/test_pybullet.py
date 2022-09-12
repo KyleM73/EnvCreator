@@ -13,7 +13,10 @@ env_c = EnvCreator.envCreator(file) ##see code for options
 env_urdf = env_c.get_urdf()
 
 #get A* path
-path = env_c.get_path((0,0),(0,18),0.2) ##see code for options
+start = (0,0)
+target = (0,18)
+filter_dist = 0.2
+path = env_c.get_path(start,target,filter_dist) ##see code for options
 path_urdf = env_c.path2urdf()
 
 #init pybullet env

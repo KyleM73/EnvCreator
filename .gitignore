@@ -3,3 +3,4 @@
 __pycache__/
 *.urdf
 !*human.urdf
+*.txt

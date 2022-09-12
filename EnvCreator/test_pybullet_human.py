@@ -13,12 +13,15 @@ env_c = EnvCreator.humanEnvCreator(file) ##see code for options
 env_urdf = env_c.get_urdf()
 
 #get A* path
-path = env_c.get_path((0,0),(0,18),0.2) ##see code for options
+start = (0,0)
+target = (0,18)
+filter_dist = 0.2
+path = env_c.get_path(start,target,filter_dist) ##see code for options
 path_urdf = env_c.path2urdf()
 
 #get human locations
 num_humans = 10
-human_locations = env_c.get_human_locations((0,0),(0,18),num_humans)
+human_locations = env_c.get_human_locations(start,target,num_humans)
 
 #init pybullet env
 client = p.connect(p.GUI)
