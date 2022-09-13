@@ -36,11 +36,12 @@ class envCreator:
         if output_dir[-1] != '/':
             output_dir += '/'
 
-        self.fname = output_dir+self.pngfile.split("/")[1].split(".")[0]+".urdf"
+        #self.fname = output_dir+self.pngfile.split("/")[1].split(".")[0]+".urdf"
+        self.fname = output_dir+self.pngfile.split(".")[-2].split("/")[-1]+".urdf"
 
         with open(self.fname,"w") as f:
             f.write('<?xml version="1.0"?>\n')
-            f.write('<robot name="{name}">\n'.format(name=self.pngfile.split(".")[0]))
+            f.write('<robot name="{name}">\n'.format(name=self.pngfile.split(".")[-2].split("/")[-1]))
             f.write('\n')
 
             mass = self.resolution*self.resolution*self.height*self.density
