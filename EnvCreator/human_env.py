@@ -90,7 +90,7 @@ class humanEnvCreator(envCreator):
             self.human_occ[r,c] = 2
 
     def generate_loc_data(self,start,target,humans,zero_loc=None,xlim=1,ylim=1,start_free_zone=1,end_free_zone=0,iter_lim=100,n=10,output_dir="data/",random_num=False):
-        self.loc_fname = output_dir+"human_loc_data_{env_name}.txt".format(env_name=self.pngfile.split("/")[1].split(".")[0])
+        self.loc_fname = output_dir+"human_loc_data_{env_name}.txt".format(env_name=self.pngfile.split(".")[-2].split("/")[-1])
         loc_data = []
         if random_num: #will interpret as "random num up to at most [humans]"
             rng = np.random.default_rng()
