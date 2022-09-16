@@ -65,6 +65,102 @@ class envCreator:
 
         return self.fname
 
+    def get_chunks(self):
+        if self.occ is None:
+            self.image2occupancy()
+
+        self.occ_chunks = self.occ.copy()
+
+        # 0 is empty 1 is unassigned wall, >2 = assigned chunk
+        # convention : explore vertical chunks first
+
+        chunks = {}
+        chunk = 2
+        for i in range(self.occ_chunks.shape[0]):
+            for j in range(self.occ_chunks.shape[1]):
+                if self.occ_chunks[i,j] == 1:
+                    c = []
+                    for k in range(self.occ_chunks.shape[0]-i):
+                        if self.occ_chunks[i+k,j] == 1:
+                            c.append([i+k,j])
+                            self.occ_chunks[i+k,j] = chunk
+                        else:
+                            break
+                    chunks[chunk] = [i,j,c,'r']
+                    chunk += 1
+
+        for k,v in chunks.copy().items():
+            if len(v[2]) == 1:
+                c = []
+                for i in range(self.occ_chunks.shape[1]-v[1]):
+                    if self.occ_chunks[v[0],v[1]+i] != 0:
+                        c.append([v[0],v[1]+i])
+                        self.occ_chunks[v[0],v[1]+i] = k
+                    else:
+                        break
+                chunks[k] = [v[0],v[1],c,'c']
+
+        for k,v in chunks.copy().items():
+            if len(v[2]) == 1:
+                del chunks[k]
+                continue
+            for k_,v_ in chunks.copy().items():
+                if (all(x in v[2] for x in v_[2])) and v != v_:
+                    del chunks[k_]
+
+        for k,v in chunks.items():
+            for i,j in v[2]:
+                self.occ_chunks[i,j] = k
+
+        #plt.imshow(self.occ_chunks, interpolation='none')
+        #plt.show()
+        return chunks
+
+    def get_urdf_fast(self,output_dir="urdf/"):
+        chunks = self.get_chunks()
+
+        ## TODO
+        # - fix offset (+ self.resolution/2 on x and y)
+        # - make boxes in urdf based om chunks
+
+        ## Initialize URDF
+
+        if output_dir[-1] != '/':
+            output_dir += '/'
+
+        #self.fname = output_dir+self.pngfile.split("/")[1].split(".")[0]+".urdf"
+        self.fname = output_dir+self.pngfile.split(".")[-2].split("/")[-1]+"_fast.urdf"
+
+        with open(self.fname,"w") as f:
+            f.write('<?xml version="1.0"?>\n')
+            f.write('<robot name="{name}_fast">\n'.format(name=self.pngfile.split(".")[-2].split("/")[-1]))
+            f.write('\n')
+
+            mass = self.resolution*self.resolution*self.height*self.density
+
+            link = self.make_base_link()
+            links = ["base"]
+            f.writelines(link)
+
+            for k,v in chunks.items():
+                links.append(str(v[0])+"_"+str(v[1]))
+
+                #link = self.make_link_chunk(v[0],v[1],mass,1,len(v[2]))
+                if v[3] == 'r':
+                    link = self.make_link_chunk(v[0],v[1],mass,1,len(v[2]))
+                    joint = self.make_joint(links[0],links[-1],v[0]+len(v[2])/2-1/2,v[1])
+                elif v[3] == 'c':
+                    link = self.make_link_chunk(v[0],v[1],mass,len(v[2]),1)
+                    joint = self.make_joint(links[0],links[-1],v[0],v[1]+len(v[2])/2-1/2)
+                
+
+                f.writelines(link)
+                f.writelines(joint)
+
+            f.write('</robot>')
+
+        return self.fname
+
     def make_base_link(self):
         lines = []
         lines.append('<link name="base">\n')
@@ -104,12 +200,43 @@ class envCreator:
         lines.append('\n')
         return lines
 
-    def make_joint(self,base,link,i,j):
+    def make_link_chunk(self,i,j,mass,x,y):
+        lines = []
+        lines.append('<link name="{name}">\n'.format(name=str(i)+"_"+str(j)))
+        lines.append('<inertial>\n')
+        lines.append('<origin rpy="0 0 0" xyz="0 0 0"/>\n')
+        lines.append('<mass value="{mass}"/>\n'.format(mass=mass))
+        lines.append('<inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>\n')
+        lines.append('</inertial>\n')
+        lines.append('<collision>\n')
+        lines.append('<geometry>\n')
+        lines.append('<box size="{x} {y} {z}"/>\n'.format(x=self.resolution*x,y=self.resolution*y,z=self.height))
+        lines.append('</geometry>\n')
+        lines.append('<origin rpy="0 0 0" xyz="0 0 0"/>\n')
+        lines.append('</collision>\n')
+        lines.append('<visual>\n')
+        lines.append('<geometry>\n')
+        lines.append('<box size="{x} {y} {z}"/>\n'.format(x=self.resolution*x,y=self.resolution*y,z=self.height))
+        lines.append('</geometry>\n')
+        lines.append('<material name="concrete">\n')
+        lines.append('<color rgba="0.62 0.62 0.62 1"/>\n')
+        lines.append('</material>\n')
+        lines.append('<origin rpy="0 0 0" xyz="0 0 0"/>\n')
+        lines.append('</visual>\n')
+        lines.append('</link>\n')
+        lines.append('\n')
+        return lines
+
+    def make_joint(self,base,link,i,j,rotate=None):
+        if rotate is not None:
+            th = rotate
+        else:
+            th = 0
         lines = []
         lines.append('<joint name="{name}" type="fixed">\n'.format(name=str(link)+"_joint"))
         lines.append('<parent link="{name}"/>\n'.format(name=base))
         lines.append('<child link="{name}"/>\n'.format(name=link))
-        lines.append('<origin rpy="0 0 0" xyz="{x} {y} {z}"/>\n'.format(x=self.resolution*(j-self.occ.shape[1]/2),y=self.resolution*(-i+self.occ.shape[0]-10),z=self.height/2))
+        lines.append('<origin rpy="0 0 {th}" xyz="{x} {y} {z}"/>\n'.format(th=th,x=self.resolution*(j-self.occ.shape[1]/2+1/2),y=self.resolution*(-i+self.occ.shape[0]-10+1/2),z=self.height/2))
         lines.append('</joint>\n')
         lines.append('\n')
         return lines
@@ -140,7 +267,7 @@ class envCreator:
         lines.append('<joint name="{name}" type="fixed">\n'.format(name=str(link)+"_joint"))
         lines.append('<parent link="{name}"/>\n'.format(name=base))
         lines.append('<child link="{name}"/>\n'.format(name=link))
-        lines.append('<origin rpy="0 0 0" xyz="{x} {y} {z}"/>\n'.format(x=pt[0],y=pt[1],z=height))
+        lines.append('<origin rpy="0 0 0" xyz="{x} {y} {z}"/>\n'.format(x=pt[0]+self.resolution/2,y=pt[1]+self.resolution/2,z=height))
         lines.append('</joint>\n')
         lines.append('\n')
         return lines
@@ -427,8 +554,8 @@ def A_Star(grid,start,target):
 if __name__ == "__main__":
     file = "occ/easy_maze.png"
     env_c = envCreator(file)
-    urdf = env_c.get_urdf()
-    path = env_c.get_path((0,0),(0,18),0.2)
+    urdf = env_c.get_urdf_fast()
+    path = env_c.get_path((0,0),(0,15),0.2)
     path_urdf = env_c.path2urdf()
     print(path)
 

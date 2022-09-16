@@ -111,7 +111,7 @@ if __name__ == "__main__":
     file = "occ/hall.png"
     env_c = humanEnvCreator(file)
     start = (0,0)
-    target = (0,18)
+    target = (0,15)
     num_humans = 10
     loc = env_c.get_human_locations(start,target,num_humans)
     #loc_data = env_c.generate_loc_data(start,target,num_humans,random_num=True)

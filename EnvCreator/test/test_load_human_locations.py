@@ -10,11 +10,11 @@ file = "occ/easy_maze.png"
 
 #create urdf of environment
 env_c = EnvCreator.humanEnvCreator(file) ##see code for options
-env_urdf = env_c.get_urdf()
+env_urdf = env_c.get_urdf_fast()
 
 #get A* path
 start = (0,0)
-target = (0,18)
+target = (0,15)
 filter_dist = 0.2
 path = env_c.get_path(start,target,filter_dist) ##see code for options
 path_urdf = env_c.path2urdf()
