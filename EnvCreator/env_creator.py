@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class envCreator:
-    def __init__(self,file,resolution=0.1,height=2,density=1):
+    def __init__(self,file,resolution=0.1,height=2,density=1,flip=False):
         self.pngfile = file
         self.resolution = resolution
         self.height = height
@@ -11,6 +11,7 @@ class envCreator:
         self.occ = None
         self.path = None
         self.path_xy = None
+        self.flip = flip
 
     def image2occupancy(self):
         ## Create Occupancy Map from Image
@@ -23,6 +24,9 @@ class envCreator:
             self.occ = np.where(np.sum(im,axis=-1)!=0,1,0)
         else:
             self.occ = np.where(im!=0,1,0)
+
+        if self.flip:
+            self.occ = np.fliplr(self.occ)
 
         return self.occ
 
@@ -37,11 +41,15 @@ class envCreator:
             output_dir += '/'
 
         #self.fname = output_dir+self.pngfile.split("/")[1].split(".")[0]+".urdf"
-        self.fname = output_dir+self.pngfile.split(".")[-2].split("/")[-1]+".urdf"
+        if self.flip:
+            fname_base = self.pngfile.split(".")[-2].split("/")[-1]+"_flipped_fast"
+        else:
+            fname_base = self.pngfile.split(".")[-2].split("/")[-1]+"_fast"
+        self.fname = output_dir+fname_base
 
-        with open(self.fname,"w") as f:
+        with open(self.fname+".urdf","w") as f:
             f.write('<?xml version="1.0"?>\n')
-            f.write('<robot name="{name}">\n'.format(name=self.pngfile.split(".")[-2].split("/")[-1]))
+            f.write('<robot name="{name}">\n'.format(name=fname_base))
             f.write('\n')
 
             mass = self.resolution*self.resolution*self.height*self.density
@@ -63,7 +71,7 @@ class envCreator:
 
             f.write('</robot>')
 
-        return self.fname
+        return self.fname+".urdf"
 
     def get_chunks(self):
         if self.occ is None:
@@ -129,11 +137,15 @@ class envCreator:
             output_dir += '/'
 
         #self.fname = output_dir+self.pngfile.split("/")[1].split(".")[0]+".urdf"
-        self.fname = output_dir+self.pngfile.split(".")[-2].split("/")[-1]+"_fast.urdf"
+        if self.flip:
+            fname_base = self.pngfile.split(".")[-2].split("/")[-1]+"_flipped_fast"
+        else:
+            fname_base = self.pngfile.split(".")[-2].split("/")[-1]+"_fast"
+        self.fname = output_dir+fname_base
 
-        with open(self.fname,"w") as f:
+        with open(self.fname+".urdf","w") as f:
             f.write('<?xml version="1.0"?>\n')
-            f.write('<robot name="{name}_fast">\n'.format(name=self.pngfile.split(".")[-2].split("/")[-1]))
+            f.write('<robot name="{name}_fast">\n'.format(name=fname_base))
             f.write('\n')
 
             mass = self.resolution*self.resolution*self.height*self.density
@@ -159,7 +171,7 @@ class envCreator:
 
             f.write('</robot>')
 
-        return self.fname
+        return self.fname+".urdf"
 
     def make_base_link(self):
         lines = []
@@ -348,11 +360,15 @@ class envCreator:
         if output_dir[-1] != '/':
             output_dir += '/'
 
-        self.path_fname = output_dir+"path.urdf"
+        if self.flip:
+            path_fname_base = "path_flipped"
+        else:
+            path_fname_base = "path"
+        self.path_fname = output_dir+path_fname_base
 
-        with open(self.path_fname,"w") as f:
+        with open(self.path_fname+".urdf","w") as f:
             f.write('<?xml version="1.0"?>\n')
-            f.write('<robot name="path">\n')
+            f.write('<robot name="{name}">\n'.format(name=path_fname_base))
             f.write('\n')
 
             link = self.make_base_link()
@@ -378,7 +394,7 @@ class envCreator:
             
             f.write('</robot>')
 
-        return self.path_fname
+        return self.path_fname+".urdf"
 
 class Node:
     def __init__(self):
