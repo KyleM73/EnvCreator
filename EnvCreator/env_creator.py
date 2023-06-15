@@ -42,9 +42,9 @@ class envCreator:
 
         #self.fname = output_dir+self.pngfile.split("/")[1].split(".")[0]+".urdf"
         if self.flip:
-            fname_base = self.pngfile.split(".")[-2].split("/")[-1]+"_flipped_fast"
+            fname_base = self.pngfile.split(".")[-2].split("/")[-1]+"_flipped"
         else:
-            fname_base = self.pngfile.split(".")[-2].split("/")[-1]+"_fast"
+            fname_base = self.pngfile.split(".")[-2].split("/")[-1]
         self.fname = output_dir+fname_base
 
         with open(self.fname+".urdf","w") as f:
