@@ -21,9 +21,9 @@ class envCreator:
             assert im.shape[2] in [3,4]
             if im.shape[2] == 4:
                 im = im[:,:,:3]
-            self.occ = np.where(np.sum(im,axis=-1)!=0,1,0)
+            self.occ = np.where(np.abs(np.sum(im,axis=-1))>0.1,1,0) #0.1 because of small artifacts from png
         else:
-            self.occ = np.where(im!=0,1,0)
+            self.occ = np.where(np.abs(im)>0.1,1,0)
 
         if self.flip:
             self.occ = np.fliplr(self.occ)
